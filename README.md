@@ -70,7 +70,7 @@ This project detects, monitors, and visualizes potential **API abuse patterns** 
 
 ### 1️⃣ Clone the Repository
 
-git clone https://github.com/Panda-0x01/bo_v2.git
+git clone https://github.com/Panda-0x01/bo_v2.git <br>
 cd api-abuse-detection
 
 pip install flask
