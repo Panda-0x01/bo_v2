@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Abuse Detection Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #fbf7f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+
+        /* 🌐 Navbar */
+        /* 🌐 Vertical Navbar */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 220px;
+            height: 100vh;
+            background: #fbf7f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 10px;
+            border-radius: 0 20px 20px 0;
+            border: 1px solid rgba(203, 203, 203, 0.564);
+        }
+
+        nav .logo {
+            font-size: 22px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 40px;
+        }
+
+        nav ul {
+            list-style: none;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 0;
+        }
+
+        nav ul li a {
+            display: block;
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        nav ul li a:hover,
+        nav ul li a.active {
+            background: #aea8a8;
+            color: white;
+        }
+
+        /* Shift main content to the right */
+        .container {
+            margin-left: 240px;
+        }
+
+
+
+        .container {
+            max-width: calc(100% - 260px);
+            margin-left: 240px;
+            /* space for sidebar */
+            padding: 20px;
+            transition: margin-left 0.3s ease;
+        }
+
+
+        header {
+            background: #f9f1f1;
+            padding: 20px 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(203, 203, 203, 0.564);
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .control-card {
+            background: #f9f1f1;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(203, 203, 203, 0.564);
+        }
+
+        .control-card h3 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        button {
+            background: #7c7878;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.stop {
+            background: #7c7878;
+        }
+
+        button.secondary {
+            background: #7c7878;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #f9f1f1;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(203, 203, 203, 0.564);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: #f9f1f1;
+            border-radius: 10px;
+            border: 1px solid rgba(203, 203, 203, 0.564);
+            padding: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .panel h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+            position: sticky;
+            top: 0;
+            background: #f9f1f1;
+            padding-bottom: 10px;
+            border: 1px solid rgba(203, 203, 203, 0.564);
+        }
+
+        .log-entry {
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            background: #f8f9fa;
+            border-left: 3px solid #667eea;
+            font-size: 13px;
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .log-details {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .status-200 {
+            border-left-color: #28a745;
+        }
+
+        .status-400 {
+            border-left-color: #ffc107;
+        }
+
+        .status-401,
+        .status-403 {
+            border-left-color: #fd7e14;
+        }
+
+        .status-404 {
+            border-left-color: #6c757d;
+        }
+
+        .status-500 {
+            border-left-color: #dc3545;
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 4px solid;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .alert-CRITICAL {
+            background: #ffe5e5;
+            border-left-color: #dc3545;
+        }
+
+        .alert-HIGH {
+            background: #fff3cd;
+            border-left-color: #fd7e14;
+        }
+
+        .alert-MEDIUM {
+            background: #fff7e6;
+            border-left-color: #ffc107;
+        }
+
+        .alert-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .alert-message {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .alert-time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .status-active {
+            background: #28a745;
+            box-shadow: 0 0 5px #28a745;
+        }
+
+        .status-inactive {
+            background: #dc3545;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+
+            .controls {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <nav>
+        <div class="logo">👦🏻 API Monitor</div>
+        <ul>
+            <li><a href="index.html" class="active">Home</a></li>
+            <li><a href="#">AI Model</a></li>
+            <li><a href="charts.html">Analysis</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <header>
+            <h1>👦🏻 API Abuse Detection Dashboard</h1>
+            <p class="subtitle">Monitor and detect API abuse patterns in real-time</p>
+        </header>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="totalRequests">0</div>
+                <div class="stat-label">Total Requests</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalAlerts">0</div>
+                <div class="stat-label">Active Alerts</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="demoStatus">
+                    <span class="status-indicator status-inactive"></span>
+                </div>
+                <div class="stat-label">Demo API</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="monitorStatus">
+                    <span class="status-indicator status-inactive"></span>
+                </div>
+                <div class="stat-label">Real API Monitor</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="control-card">
+                <h3>
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    Simulate Traffic
+                </h3>
+                <label>Number of Requests:</label>
+                <input type="number" id="simCount" value="20" min="1" max="100">
+                <button onclick="simulateTraffic()">Start Simulation</button>
+            </div>
+
+            <div class="control-card">
+                <h3>
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                        </path>
+                    </svg>
+                    Demo API Generator
+                </h3>
+                <p style="font-size: 13px; color: #666; margin-bottom: 10px;">
+                    Generates automatic traffic to /demo-api endpoint
+                </p>
+                <button id="demoBtn" onclick="toggleDemoAPI()">Start Demo API</button>
+            </div>
+
+            <div class="control-card">
+                <h3>
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9">
+                        </path>
+                    </svg>
+                    Real API Monitor
+                </h3>
+                <label>API URL:</label>
+                <input type="text" id="apiUrl" placeholder="https://api.example.com/endpoint">
+                <button id="monitorBtn" class="secondary" onclick="toggleMonitor()">Start Monitoring</button>
+            </div>
+
+            <div class="control-card">
+                <h3>
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                        </path>
+                    </svg>
+                    Detection & Controls
+                </h3>
+                <button class="secondary" onclick="detectAbuse()">Run Abuse Detection</button>
+                <button class="stop" onclick="clearLogs()">Clear All Logs</button>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="panel">
+                <h2>📋 Request Logs</h2>
+                <div id="logsContainer">
+                    <div class="empty-state">No requests logged yet</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>⚠️ Abuse Alerts</h2>
+                <div id="alertsContainer">
+                    <div class="empty-state">No alerts detected</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000';
+        let demoActive = false;
+        let monitorActive = false;
+        let refreshInterval;
+
+        async function simulateTraffic() {
+            const count = document.getElementById('simCount').value;
+            try {
+                const response = await fetch(`${API_BASE}/simulate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ count: parseInt(count) })
+                });
+                const data = await response.json();
+                console.log('Simulation complete:', data);
+                await refreshData();
+            } catch (error) {
+                console.error('Error simulating traffic:', error);
+            }
+        }
+
+        async function toggleDemoAPI() {
+            const action = demoActive ? 'stop' : 'start';
+            try {
+                const response = await fetch(`${API_BASE}/toggle_demo_api`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action })
+                });
+                const data = await response.json();
+                demoActive = action === 'start';
+                updateDemoButton();
+                updateStats();
+            } catch (error) {
+                console.error('Error toggling demo API:', error);
+            }
+        }
+
+        async function toggleMonitor() {
+            const action = monitorActive ? 'stop' : 'start';
+            const url = document.getElementById('apiUrl').value;
+
+            if (action === 'start' && !url) {
+                alert('Please enter an API URL');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/monitor_real_api`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action, url })
+                });
+                const data = await response.json();
+                monitorActive = action === 'start';
+                updateMonitorButton();
+                updateStats();
+            } catch (error) {
+                console.error('Error toggling monitor:', error);
+            }
+        }
+
+        async function detectAbuse() {
+            try {
+                const response = await fetch(`${API_BASE}/detect`, { method: 'POST' });
+                const data = await response.json();
+                console.log('Detection complete:', data);
+                await refreshData();
+            } catch (error) {
+                console.error('Error detecting abuse:', error);
+            }
+        }
+
+        async function clearLogs() {
+            if (!confirm('Clear all logs and alerts?')) return;
+            try {
+                await fetch(`${API_BASE}/clear_logs`, { method: 'POST' });
+                await refreshData();
+            } catch (error) {
+                console.error('Error clearing logs:', error);
+            }
+        }
+
+        async function refreshData() {
+            try {
+                const [logs, alerts, stats] = await Promise.all([
+                    fetch(`${API_BASE}/get_logs?limit=50`).then(r => r.json()),
+                    fetch(`${API_BASE}/get_alerts`).then(r => r.json()),
+                    fetch(`${API_BASE}/stats`).then(r => r.json())
+                ]);
+
+                updateLogs(logs);
+                updateAlerts(alerts);
+                updateStatsDisplay(stats);
+            } catch (error) {
+                console.error('Error refreshing data:', error);
+            }
+        }
+
+        function updateLogs(logs) {
+            const container = document.getElementById('logsContainer');
+            if (logs.length === 0) {
+                container.innerHTML = '<div class="empty-state">No requests logged yet</div>';
+                return;
+            }
+
+            container.innerHTML = logs.reverse().map(log => {
+                const time = new Date(log.timestamp).toLocaleTimeString();
+                const statusClass = `status-${log.status}`;
+                return `
+                    <div class="log-entry ${statusClass}">
+                        <div class="log-header">
+                            <span>${log.method} ${log.endpoint}</span>
+                            <span style="color: ${log.status === 200 ? '#28a745' : '#dc3545'}">${log.status}</span>
+                        </div>
+                        <div class="log-details">
+                            IP: ${log.ip} | Time: ${time} | Response: ${log.response_time}s
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateAlerts(alerts) {
+            const container = document.getElementById('alertsContainer');
+            if (alerts.length === 0) {
+                container.innerHTML = '<div class="empty-state">No alerts detected</div>';
+                return;
+            }
+
+            container.innerHTML = alerts.map(alert => {
+                const time = new Date(alert.timestamp).toLocaleTimeString();
+                return `
+                    <div class="alert alert-${alert.severity}">
+                        <div class="alert-title">${alert.type} - ${alert.severity}</div>
+                        <div class="alert-message">${alert.message}</div>
+                        <div class="alert-time">${time}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateStatsDisplay(stats) {
+            document.getElementById('totalRequests').textContent = stats.total_requests;
+            document.getElementById('totalAlerts').textContent = stats.total_alerts;
+
+            demoActive = stats.demo_api_active;
+            monitorActive = stats.real_api_active;
+            updateDemoButton();
+            updateMonitorButton();
+        }
+
+        function updateStats() {
+            fetch(`${API_BASE}/stats`)
+                .then(r => r.json())
+                .then(stats => {
+                    const demoIndicator = document.querySelector('#demoStatus .status-indicator');
+                    const monitorIndicator = document.querySelector('#monitorStatus .status-indicator');
+
+                    demoIndicator.className = `status-indicator ${stats.demo_api_active ? 'status-active' : 'status-inactive'}`;
+                    monitorIndicator.className = `status-indicator ${stats.real_api_active ? 'status-active' : 'status-inactive'}`;
+                });
+        }
+
+        function updateDemoButton() {
+            const btn = document.getElementById('demoBtn');
+            if (demoActive) {
+                btn.textContent = 'Stop Demo API';
+                btn.className = 'stop';
+            } else {
+                btn.textContent = 'Start Demo API';
+                btn.className = '';
+            }
+            updateStats();
+        }
+
+        function updateMonitorButton() {
+            const btn = document.getElementById('monitorBtn');
+            if (monitorActive) {
+                btn.textContent = 'Stop Monitoring';
+                btn.className = 'stop';
+            } else {
+                btn.textContent = 'Start Monitoring';
+                btn.className = 'secondary';
+            }
+            updateStats();
+        }
+
+        // Auto-refresh every 2 seconds
+        refreshInterval = setInterval(refreshData, 2000);
+
+        // Initial load
+        refreshData();
+    </script>
+</body>
+
+</html>
