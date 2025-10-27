@@ -40,10 +40,8 @@ This project detects, monitors, and visualizes potential **API abuse patterns** 
 
 **Backend:**
 - Python (Flask)  
-- Simulated detection engine (no Kafka, no Docker required)  
+- Simulated detection engine 
 - JSON-based data handling
-
----
 
 ---
 
@@ -72,7 +70,7 @@ This project detects, monitors, and visualizes potential **API abuse patterns** 
 
 ### 1️⃣ Clone the Repository
 
-git clone https://github.com/yourusername/api-abuse-detection.git
+git clone https://github.com/Panda-0x01/bo_v2.git
 cd api-abuse-detection
 
 pip install flask
@@ -86,12 +84,12 @@ python app.py
 Open frontend/index.html in your browser.
 It connects automatically to the backend running on http://localhost:5000.
 
-3️⃣ 📈 Future Improvements
+📈 Future Improvements
 
-Integrate real-time database (MongoDB or SQLite)
+- Integrate real-time database (MongoDB or SQLite)
 
-Add ML-based anomaly detection
+- Add ML-based anomaly detection
 
-Enable user authentication for secure API management
+- Enable user authentication for secure API management
 
-Deploy to cloud platforms
+- Deploy to cloud platforms
