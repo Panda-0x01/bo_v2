@@ -73,13 +73,16 @@ This project detects, monitors, and visualizes potential **API abuse patterns** 
 git clone https://github.com/Panda-0x01/bo_v2.git <br>
 cd api-abuse-detection
 
+### 2️⃣ Install Dependencies
 `pip install flask`
+
+### 3️⃣ Run the Backend
 
 `cd backend`  <br>
 `python app.py`
 
 
-2️⃣ Open the Dashboard
+### 4️⃣ Open the Dashboard
 
 Open frontend/index.html in your browser.
 It connects automatically to the backend running on http://localhost:5000.
